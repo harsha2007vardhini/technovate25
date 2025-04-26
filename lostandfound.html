@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lost and Found System</title>
+  <link rel="stylesheet" href="lostandfound.css">
+
+</head>
+<body>
+    <header>
+      <h1>Lost and Found System</h1>
+      <nav>
+        <button onclick="showSection('home')">Home</button>
+        <button onclick="showSection('reportItem')">Report Item</button>
+        <button onclick="showSection('viewItems')">View All Items</button>
+      </nav>
+    </header>
+  
+    <main>
+      <!-- Home Section -->
+      <section id="home">
+        <h2>Welcome</h2>
+        <p>Use the navigation above to report or view lost and found items.</p>
+      </section>
+  
+      <!-- Report Item -->
+      <section id="reportItem" class="hidden">
+        <h2 style="text-align: center;">Report Lost/Found Item</h2>
+        <form id="itemForm">
+          <select id="itemType" required onchange="updateLocationPlaceholder()">
+            <option value="">Select Type</option>
+            <option value="Lost">Lost</option>
+            <option value="Found">Found</option>
+          </select>
+          <input type="text" id="itemName" placeholder="Item Name" required />
+          <input type="text" id="itemLocation" placeholder="Location" required />
+          <input type="date" id="itemDate" required />
+          <textarea id="itemDescription" placeholder="Description" required></textarea>
+          <input type="file" id="itemImage" accept="image/*" />
+          <input type="email" id="userEmail" placeholder="Your Email (for notification)" required />
+          <button type="submit" class="submit-btn">Submit Item</button>
+        </form>
+      </section>
+  
+      <!-- View All Items -->
+      <section id="viewItems" class="hidden">
+        <h2>All Reported Items</h2>
+        <div id="itemsList" class="items-list"></div>
+      </section>
+    </main>
+
+  <script src="lostandfound.js"></script>
+
+</body>
+</html>
