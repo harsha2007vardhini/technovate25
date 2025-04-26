@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lost and Found System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #1a1a1a;
+      color: white;
+      text-align: center;
+      padding: 15px;
+    }
+
+    nav {
+      margin-top: 10px;
+    }
+
+    nav button {
+      margin: 5px;
+      padding: 10px 15px;
+      background: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 500px;
+      margin: 40px auto;
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    input, textarea, select {
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #000;
+      color: white;
+      border: 1px solid #555;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    button.submit-btn {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    .items-list {
+      margin-top: 30px;
+    }
+
+    .item {
+      background: #1a1a1a;
+      padding: 10px;
+      margin: 10px auto;
+      border-radius: 5px;
+      border-left: 5px solid #3498db;
+      max-width: 500px;
+    }
+
+    .item img {
+      max-width: 100%;
+      height: auto;
+      margin-top: 10px;
+      border-radius: 5px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    input[type="file"] {
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lost and Found System</h1>
+    <nav>
+      <button onclick="showSection('home')">Home</button>
+      <button onclick="showSection('reportItem')">Report Item</button>
+      <button onclick="showSection('viewItems')">View All Items</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Home Section -->
+    <section id="home">
+      <h2>Welcome</h2>
+      <p>Use the navigation above to report or view lost and found items.</p>
+    </section>
+
+    <!-- Report Item -->
+    <section id="reportItem" class="hidden">
+      <h2 style="text-align: center;">Report Lost/Found Item</h2>
+      <form id="itemForm">
+        <select id="itemType" required onchange="updateLocationPlaceholder()">
+          <option value="">Select Type</option>
+          <option value="Lost">Lost</option>
+          <option value="Found">Found</option>
+        </select>
+        <input type="text" id="itemName" placeholder="Item Name" required />
+        <input type="text" id="itemLocation" placeholder="Location" required />
+        <input type="date" id="itemDate" required />
+        <textarea id="itemDescription" placeholder="Description" required></textarea>
+        <input type="file" id="itemImage" accept="image/*" />
+        <input type="email" id="userEmail" placeholder="Your Email (for notification)" required />
+        <button type="submit" class="submit-btn">Submit Item</button>
+      </form>
+    </section>
+
+    <!-- View All Items -->
+    <section id="viewItems" class="hidden">
+      <h2>All Reported Items</h2>
+      <div id="itemsList" class="items-list"></div>
+    </section>
+  </main>
+
+  <script>
+    const itemForm = document.getElementById('itemForm');
+    const itemsList = document.getElementById('itemsList');
+    const itemLocation = document.getElementById('itemLocation');
+    const itemType = document.getElementById('itemType');
+
+    const sections = ['home', 'reportItem', 'viewItems'];
+
+    function showSection(id) {
+      sections.forEach(sec => {
+        document.getElementById(sec).classList.add('hidden');
+      });
+      document.getElementById(id).classList.remove('hidden');
+
+      if (id === 'viewItems') {
+        displayItems();
+      }
+    }
+
+    function updateLocationPlaceholder() {
+      const type = itemType.value;
+      itemLocation.placeholder = type === 'Found' ? 'Found Location' : type === 'Lost' ? 'Lost Location' : 'Location';
+    }
+
+    function saveItem(data) {
+      const items = JSON.parse(localStorage.getItem('lostFoundItems') || '[]');
+      items.push(data);
+      localStorage.setItem('lostFoundItems', JSON.stringify(items));
+    }
+
+    function displayItems() {
+      const items = JSON.parse(localStorage.getItem('lostFoundItems') || '[]');
+      itemsList.innerHTML = '';
+      if (items.length === 0) {
+        itemsList.innerHTML = '<p>No items reported yet.</p>';
+        return;
+      }
+
+      items.forEach(item => {
+  const div = document.createElement('div');
+  div.className = 'item';                           
+  const locLabel = item.type === 'Found' ? 'Found Location' : 'Lost Location';
+
+  div.innerHTML = `
+    <strong>Type:</strong> ${item.type}<br/>
+    <strong>Name:</strong> ${item.name}<br/>
+    <strong>${locLabel}:</strong> ${item.location}<br/>
+    <strong>Date:</strong> ${item.date}<br/>
+    <p><strong>Description:</strong> ${item.description}</p>
+    ${item.image ? `<img src="${item.image}" alt="Item Image">` : ''}
+    <p><small>Reported by: ${item.email}</small></p>
+  `;
+
+  itemsList.appendChild(div);
+});
+    }
+
+  function sendEmailNotification(data) {
+      console.log("Sending email to:", data.email);
+      console.log("Item details:", data);
+      // For real email notifications, integrate with EmailJS or backend server
+  }
+
+    itemForm.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById('itemImage');
+      const file = fileInput.files[0];
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function () {
+          submitForm(reader.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        submitForm('');
+      }
+
+      function submitForm(imageData) {
+        const data = {
+          type: itemType.value,
+          name: document.getElementById('itemName').value,
+          location: itemLocation.value,
+          date: document.getElementById('itemDate').value,
+          description: document.getElementById('itemDescription').value,
+          image: imageData,
+          email: document.getElementById('userEmail').value
+        };
+
+        saveItem(data);
+sendEmailNotification(data);
+alert(`${data.type} item reported!`);
+itemForm.reset();
+itemLocation.placeholder = 'Location';
+showSection('home');
+
+      }
+    });
+
+    showSection('home');
+  </script>
+</body>
+</html>
